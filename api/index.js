@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require('cors');
+const Joi = require('joi');
 const pool = require("./db");
  
 const app = express();
@@ -13,6 +14,16 @@ app.use(cors({
   origin: corsOrigin,
 }));
  
+// Schéma de validation d'une tâche : seul ce contrôle protège les données
+const taskSchema = Joi.object({
+  name: Joi.string().trim().max(255).required().messages({
+    "any.required": "Le nom de la tâche est obligatoire",
+    "string.empty": "Le nom de la tâche est obligatoire",
+    "string.max": "Le nom de la tâche ne doit pas dépasser 255 caractères",
+  }),
+  description: Joi.string().allow("", null),
+});
+
 // GET /tasks : liste de tous les tasks
 // Avant : res.json(tasks)
 app.get("/tasks", async (req, res) => {
@@ -41,8 +52,9 @@ app.get("/tasks/:id", async (req, res) => {
 // POST /tasks : création
 // Avant : tasks.push(newItem)
 app.post("/tasks", async (req, res) => {
-  const { name, description } = req.body;
-  if (!name) return res.status(400).json({ error: "Le champ name est obligatoire" });
+  const { error, value } = taskSchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+  const { name, description } = value;
   try {
     const result = await pool.query(
       "INSERT INTO tasks (name, description) VALUES ($1, $2) RETURNING *",
@@ -58,7 +70,9 @@ app.post("/tasks", async (req, res) => {
 // PUT /tasks/:id : modification
 // Avant : tasks[index] = { ...tasks[index], ...req.body }
 app.put("/tasks/:id", async (req, res) => {
-  const { name, description } = req.body;
+  const { error, value } = taskSchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+  const { name, description } = value;
   try {
     const result = await pool.query(
       "UPDATE tasks SET name = $1, description = $2 WHERE id = $3 RETURNING *",

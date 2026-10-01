@@ -5,6 +5,9 @@ import TaskStatusBadge from "./TaskStatusBadge.tsx";
 import { Input } from "./shadcn/input";
 import { Button } from "./shadcn/button";
 
+// Même limite que le schéma Joi de l'API
+const NAME_MAX_LENGTH = 255;
+
 export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: TaskFormProps) {
     const [name, setName] = useState(task?.name ?? "");
     const [description, setDescription] = useState(task?.description ?? "");
@@ -24,6 +27,11 @@ export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: Task
             nameInputRef?.current?.focus();
             return;
         }
+        if (name.trim().length > NAME_MAX_LENGTH) {
+            setNameError(`Le nom de la tâche ne doit pas dépasser ${NAME_MAX_LENGTH} caractères.`);
+            nameInputRef?.current?.focus();
+            return;
+        }
         setSubmitting(true);
         setError(null);
 
@@ -33,7 +41,11 @@ export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: Task
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, description: description || null }),
             });
-            if (!res.ok) throw new Error(task ? "Erreur lors de la modification" : "Erreur lors de l'ajout de la tâche");
+            if (!res.ok) {
+                // L'API renvoie le message de validation Joi en cas d'erreur 400
+                const body = await res.json().catch(() => null);
+                throw new Error(body?.error ?? (task ? "Erreur lors de la modification" : "Erreur lors de l'ajout de la tâche"));
+            }
 
             const savedTask: Task = await res.json();
             onSaved(savedTask);
@@ -59,6 +71,7 @@ export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: Task
                     }}
                     ref={nameInputRef}
                     required
+                    maxLength={NAME_MAX_LENGTH}
                     aria-invalid={nameError ? true : undefined}
                     aria-describedby={nameError ? "task-name-error" : undefined}
                 />
