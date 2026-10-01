@@ -22,6 +22,10 @@ const taskSchema = Joi.object({
     "string.max": "Le nom de la tâche ne doit pas dépasser 255 caractères",
   }),
   description: Joi.string().allow("", null),
+  // Prénom du bénévole uniquement ; "" est converti en null
+  assignee: Joi.string().trim().max(50).empty("").allow(null).default(null).messages({
+    "string.max": "Le prénom du bénévole ne doit pas dépasser 50 caractères",
+  }),
 });
 
 // GET /tasks : liste de tous les tasks
@@ -54,11 +58,11 @@ app.get("/tasks/:id", async (req, res) => {
 app.post("/tasks", async (req, res) => {
   const { error, value } = taskSchema.validate(req.body);
   if (error) return res.status(400).json({ error: error.details[0].message });
-  const { name, description } = value;
+  const { name, description, assignee } = value;
   try {
     const result = await pool.query(
-      "INSERT INTO tasks (name, description) VALUES ($1, $2) RETURNING *",
-      [name, description]
+      "INSERT INTO tasks (name, description, assignee) VALUES ($1, $2, $3) RETURNING *",
+      [name, description, assignee]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -72,11 +76,11 @@ app.post("/tasks", async (req, res) => {
 app.put("/tasks/:id", async (req, res) => {
   const { error, value } = taskSchema.validate(req.body);
   if (error) return res.status(400).json({ error: error.details[0].message });
-  const { name, description } = value;
+  const { name, description, assignee } = value;
   try {
     const result = await pool.query(
-      "UPDATE tasks SET name = $1, description = $2 WHERE id = $3 RETURNING *",
-      [name, description, req.params.id]
+      "UPDATE tasks SET name = $1, description = $2, assignee = $3 WHERE id = $4 RETURNING *",
+      [name, description, assignee, req.params.id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: "Item introuvable" });
     res.json(result.rows[0]);

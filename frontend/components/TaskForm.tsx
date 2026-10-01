@@ -7,10 +7,12 @@ import { Button } from "./shadcn/button";
 
 // Même limite que le schéma Joi de l'API
 const NAME_MAX_LENGTH = 255;
+const ASSIGNEE_MAX_LENGTH = 50;
 
 export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: TaskFormProps) {
     const [name, setName] = useState(task?.name ?? "");
     const [description, setDescription] = useState(task?.description ?? "");
+    const [assignee, setAssignee] = useState(task?.assignee ?? "");
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     // Erreur de saisie du champ "Nom", affichée sous le champ et reliée par aria-describedby
@@ -39,7 +41,7 @@ export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: Task
             const res = await fetch(task ? `http://localhost:3000/tasks/${task.id}` : "http://localhost:3000/tasks", {
                 method: task ? "PUT" : "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, description: description || null }),
+                body: JSON.stringify({ name, description: description || null, assignee: assignee.trim() || null }),
             });
             if (!res.ok) {
                 // L'API renvoie le message de validation Joi en cas d'erreur 400
@@ -85,6 +87,18 @@ export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: Task
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="min-h-24 w-full resize-y rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+                />
+            </div>
+            <div className="flex flex-col gap-1.5">
+                <label htmlFor="task-assignee" className="text-sm font-medium">Prénom du bénévole</label>
+                <Input
+                    id="task-assignee"
+                    type="text"
+                    placeholder="Optionnel, prénom uniquement"
+                    value={assignee}
+                    onChange={(e) => setAssignee(e.target.value)}
+                    maxLength={ASSIGNEE_MAX_LENGTH}
+                    autoComplete="off"
                 />
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">

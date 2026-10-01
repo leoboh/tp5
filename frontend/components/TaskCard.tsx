@@ -48,6 +48,9 @@ export default function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
                 {task.description
                     ? <p className="text-sm wrap-break-word text-muted-foreground">{task.description}</p>
                     : <p className="text-sm text-muted-foreground italic">Aucune description</p>}
+                <p className="text-sm text-muted-foreground">
+                    Bénévole : {task.assignee ?? <span className="italic">non assigné</span>}
+                </p>
 
                 {confirming ? (
                     <div role="group" aria-label={`Confirmer la suppression de la tâche ${task.name}`} className="mt-auto flex flex-wrap items-center gap-2 rounded-lg bg-destructive/10 p-2.5 text-sm">
