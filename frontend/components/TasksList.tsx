@@ -113,7 +113,7 @@ export default function TasksList() {
                     <div className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
                         <strong className="text-base font-semibold text-foreground">Aucune tâche ici</strong>
                         <span>{emptyMessage}</span>
-                        <Button variant="outline" onClick={() => openDrawer(null)}>Ajouter une tâche</Button>
+                        <Button variant="outline" className="cursor-pointer" onClick={() => openDrawer(null)}>Ajouter une tâche</Button>
                     </div>
                 )}
 

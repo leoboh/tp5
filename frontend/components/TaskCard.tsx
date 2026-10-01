@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FaPen, FaTrashAlt } from "react-icons/fa";
 import { TaskCardProps } from "../types/taskCardProps";
+import TaskStatusBadge from "./TaskStatusBadge.tsx";
 import { Card, CardContent } from "./shadcn/card";
 import { Button } from "./shadcn/button";
 
@@ -9,7 +10,6 @@ export default function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
     const [confirming, setConfirming] = useState(false);
     const deleteButtonRef = useRef<HTMLButtonElement>(null);
     const cancelButtonRef = useRef<HTMLButtonElement>(null);
-    const statusId = `task-${task.id}-complete`;
 
     // Le focus arrive sur l'action non destructive dès l'apparition de la confirmation
     useEffect(() => {
@@ -26,19 +26,9 @@ export default function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
         <Card className="group/task h-full transition-shadow hover:ring-foreground/20">
             <CardContent className="flex h-full flex-col gap-2.5">
                 <div className="flex items-center justify-between gap-2">
-                    {/* Statut calculé par la base (nom + description renseignés) : case en lecture seule */}
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="checkbox"
-                            id={statusId}
-                            checked={task.complete}
-                            disabled
-                            className="size-4 accent-[#0a6e38]"
-                        />
-                        <label htmlFor={statusId} className="text-sm font-medium text-foreground">Complète</label>
-                    </div>
+                    <TaskStatusBadge complete={task.complete} />
                     <div className="flex gap-0.5">
-                        <Button variant="ghost" size="icon-sm" aria-label={`Modifier la tâche ${task.name}`} onClick={() => onEdit(task)}>
+                        <Button variant="ghost" size="icon-sm" className="cursor-pointer" aria-label={`Modifier la tâche ${task.name}`} onClick={() => onEdit(task)}>
                             <FaPen aria-hidden="true" />
                         </Button>
                         <Button
@@ -46,7 +36,7 @@ export default function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
                             variant="ghost"
                             size="icon-sm"
                             aria-label={`Supprimer la tâche ${task.name}`}
-                            className="hover:bg-destructive/10 hover:text-destructive"
+                            className="cursor-pointer hover:bg-destructive/10 hover:text-destructive"
                             onClick={() => setConfirming(true)}
                         >
                             <FaTrashAlt aria-hidden="true" />

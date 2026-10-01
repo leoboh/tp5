@@ -26,7 +26,7 @@ export default function TasksHeader({ total, completed, onAdd, headingRef }: Tas
                     <span className="font-mono text-xs text-muted-foreground">{percent} %</span>
                 </div>
             </div>
-            <Button size="lg" className="px-3.5" onClick={onAdd}>
+            <Button size="lg" className="cursor-pointer px-3.5" onClick={onAdd}>
                 Ajouter une tâche
             </Button>
         </header>

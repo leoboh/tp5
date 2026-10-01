@@ -17,7 +17,7 @@ export default function TaskFilterButtons({ filter, onFilterChange, counts }: Ta
                     aria-pressed={filter === value}
                     onClick={() => onFilterChange(value)}
                     className={cn(
-                        "inline-flex h-7 items-center gap-2 rounded-md px-3 text-sm font-medium text-foreground/75 transition-colors hover:text-foreground",
+                        "inline-flex h-7 cursor-pointer items-center gap-2 rounded-md px-3 text-sm font-medium text-foreground/75 transition-colors hover:text-foreground",
                         filter === value && "bg-background text-foreground shadow-sm"
                     )}
                 >
