@@ -1,7 +1,10 @@
 CREATE TABLE IF NOT EXISTS tasks (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
-  description TEXT
+  description TEXT,
+  complete BOOLEAN GENERATED ALWAYS AS (
+    COALESCE(TRIM(name), '') <> '' AND COALESCE(TRIM(description), '') <> ''
+  ) STORED
 );
 
 INSERT INTO tasks (name, description) VALUES
