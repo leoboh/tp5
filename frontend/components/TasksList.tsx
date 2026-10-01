@@ -47,7 +47,7 @@ export default function TasksList() {
             ? tasks.map((t) => (t.id === saved.id ? saved : t))
             : [...tasks, saved]);
         setActionError(null);
-        setStatusMessage(`Tâche « ${saved.name} » ${editingTask ? "modifiée" : "ajoutée"}.`);
+        setStatusMessage(`Dernière action : « ${saved.name} » ${editingTask ? "modifiée" : "ajoutée"}.`);
         setDrawerOpen(false);
     };
 
