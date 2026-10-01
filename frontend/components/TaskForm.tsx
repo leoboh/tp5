@@ -10,12 +10,20 @@ export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: Task
     const [description, setDescription] = useState(task?.description ?? "");
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // Erreur de saisie du champ "Nom", affichée sous le champ et reliée par aria-describedby
+    const [nameError, setNameError] = useState<string | null>(null);
 
     // Même règle que la colonne générée "complete" en base
     const willBeComplete = name.trim() !== "" && description.trim() !== "";
 
     const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault(); // évite le rechargement de la page
+
+        if (name.trim() === "") {
+            setNameError("Le nom de la tâche est obligatoire.");
+            nameInputRef?.current?.focus();
+            return;
+        }
         setSubmitting(true);
         setError(null);
 
@@ -37,18 +45,24 @@ export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: Task
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-4 p-4">
+        <form onSubmit={handleSubmit} noValidate className="flex flex-1 flex-col gap-4 p-4">
             <div className="flex flex-col gap-1.5">
-                <label htmlFor="task-name" className="text-sm font-medium">Nom</label>
+                <label htmlFor="task-name" className="text-sm font-medium">Nom (obligatoire)</label>
                 <Input
                     id="task-name"
                     type="text"
                     placeholder="Ex. Préparer la démo"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                        setName(e.target.value);
+                        if (nameError) setNameError(null);
+                    }}
                     ref={nameInputRef}
                     required
+                    aria-invalid={nameError ? true : undefined}
+                    aria-describedby={nameError ? "task-name-error" : undefined}
                 />
+                {nameError && <p id="task-name-error" role="alert" className="text-sm text-destructive">{nameError}</p>}
             </div>
             <div className="flex flex-col gap-1.5">
                 <label htmlFor="task-description" className="text-sm font-medium">Description</label>
@@ -57,13 +71,13 @@ export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: Task
                     placeholder="Optionnelle, mais nécessaire pour que la tâche soit complète"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="min-h-24 w-full resize-y rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+                    className="min-h-24 w-full resize-y rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
                 />
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 Statut après enregistrement : <TaskStatusBadge complete={willBeComplete} />
             </div>
-            {error && <p className="text-sm text-destructive">Erreur : {error}</p>}
+            {error && <p role="alert" className="text-sm text-destructive">Erreur : {error}</p>}
             <div className="mt-auto flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={onCancel}>Annuler</Button>
                 <Button type="submit" disabled={submitting}>

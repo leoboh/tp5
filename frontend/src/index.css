@@ -55,7 +55,8 @@
 
   --destructive: oklch(0.577 0.245 27.325);
 
-  --input: oklch(0.922 0 0);
+  /* Bordure des champs : contraste ≥ 3:1 sur fond blanc (WCAG 1.4.11) */
+  --input: oklch(0.62 0 0);
 
   --ring: oklch(0.708 0 0);
 
@@ -118,6 +119,12 @@ body {
 
 p {
   margin: 0;
+}
+
+/* Focus clavier toujours visible et contrasté (≥ 3:1) sur tous les éléments interactifs */
+:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
 }
 
 code,

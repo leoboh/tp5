@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Task } from "../types/tasks";
 import { TaskFilter } from "../types/taskFilterButtonsProps";
 import TasksHeader from "./TasksHeader.tsx";
@@ -11,6 +11,13 @@ export default function TasksList() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // Messages annoncés aux lecteurs d'écran : succès (role="status") et erreurs d'action (role="alert")
+    const [statusMessage, setStatusMessage] = useState("");
+    const [actionError, setActionError] = useState<string | null>(null);
+
+    // Cible du focus quand la carte focalisée est supprimée
+    const headingRef = useRef<HTMLHeadingElement>(null);
 
     // Filtre d'affichage des tâches
     const [filter, setFilter] = useState<TaskFilter>("all");
@@ -39,6 +46,8 @@ export default function TasksList() {
         setTasks(editingTask
             ? tasks.map((t) => (t.id === saved.id ? saved : t))
             : [...tasks, saved]);
+        setActionError(null);
+        setStatusMessage(`Tâche « ${saved.name} » ${editingTask ? "modifiée" : "ajoutée"}.`);
         setDrawerOpen(false);
     };
 
@@ -48,8 +57,13 @@ export default function TasksList() {
             if (!res.ok) throw new Error("Erreur lors de la suppression");
 
             setTasks(tasks.filter((t) => t.id !== task.id));
+            setActionError(null);
+            setStatusMessage(`Tâche « ${task.name} » supprimée.`);
+            // La carte (et le bouton focalisé) disparaît : on replace le focus sur le titre de la page
+            headingRef.current?.focus();
         } catch (err) {
-            alert(err instanceof Error ? err.message : "Erreur inconnue");
+            setStatusMessage("");
+            setActionError(err instanceof Error ? err.message : "Erreur inconnue");
         }
     };
 
@@ -69,32 +83,42 @@ export default function TasksList() {
     }[filter];
 
     return (
-        <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-10">
-            <TasksHeader total={tasks.length} completed={completed} onAdd={() => openDrawer(null)} />
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-10">
+            <TasksHeader total={tasks.length} completed={completed} onAdd={() => openDrawer(null)} headingRef={headingRef} />
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <TaskFilterButtons filter={filter} onFilterChange={setFilter} counts={counts} />   
-            </div>
+            <main className="flex flex-col gap-6">
+                <h2 className="sr-only">Liste des tâches</h2>
 
-            {loading ? (
-                <p className="text-sm text-muted-foreground">Chargement...</p>
-            ) : error ? (
-                <p className="text-sm text-destructive">Erreur : {error}</p>
-            ) : displayedTasks.length > 0 ? (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {displayedTasks.map((task) => (
-                        <TaskCard key={task.id} task={task} onEdit={openDrawer} onDelete={handleDelete} />
-                    ))}
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <TaskFilterButtons filter={filter} onFilterChange={setFilter} counts={counts} />
+                    {/* Zone toujours présente dans le DOM pour que les lecteurs d'écran annoncent ses changements */}
+                    <p role="status" className="text-sm text-foreground">
+                        {loading ? "Chargement des tâches..." : statusMessage}
+                    </p>
                 </div>
-            ) : (
-                <div className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
-                    <strong className="text-base font-semibold text-foreground">Aucune tâche ici</strong>
-                    <span>{emptyMessage}</span>
-                    <Button variant="outline" onClick={() => openDrawer(null)}>Ajouter une tâche</Button>
-                </div>
-            )}
 
-            <TaskFormDrawer open={drawerOpen} onOpenChange={setDrawerOpen} task={editingTask} onSaved={handleSaved} />
-        </main>
+                {actionError && <p role="alert" className="text-sm text-destructive">Erreur : {actionError}</p>}
+
+                {loading ? null : error ? (
+                    <p role="alert" className="text-sm text-destructive">Erreur : {error}</p>
+                ) : displayedTasks.length > 0 ? (
+                    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {displayedTasks.map((task) => (
+                            <li key={task.id}>
+                                <TaskCard task={task} onEdit={openDrawer} onDelete={handleDelete} />
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <div className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
+                        <strong className="text-base font-semibold text-foreground">Aucune tâche ici</strong>
+                        <span>{emptyMessage}</span>
+                        <Button variant="outline" onClick={() => openDrawer(null)}>Ajouter une tâche</Button>
+                    </div>
+                )}
+
+                <TaskFormDrawer open={drawerOpen} onOpenChange={setDrawerOpen} task={editingTask} onSaved={handleSaved} />
+            </main>
+        </div>
     )
 }
