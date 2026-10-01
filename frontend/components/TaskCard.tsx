@@ -5,11 +5,12 @@ import TaskStatusBadge from "./TaskStatusBadge.tsx";
 import { Card, CardContent } from "./shadcn/card";
 import { Button } from "./shadcn/button";
 
-export default function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
+export default function TaskCard({ task, onEdit, onDelete, onRemoveAssignee }: TaskCardProps) {
     // Affiche la confirmation de suppression dans la carte (remplace confirm())
     const [confirming, setConfirming] = useState(false);
     const deleteButtonRef = useRef<HTMLButtonElement>(null);
     const cancelButtonRef = useRef<HTMLButtonElement>(null);
+    const editButtonRef = useRef<HTMLButtonElement>(null);
 
     // Le focus arrive sur l'action non destructive dès l'apparition de la confirmation
     useEffect(() => {
@@ -22,13 +23,19 @@ export default function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
         setConfirming(false);
     };
 
+    const removeAssignee = async () => {
+        await onRemoveAssignee(task);
+        // Le bouton "Retirer le bénévole" disparaît : on garde le focus dans la carte
+        editButtonRef.current?.focus();
+    };
+
     return (
         <Card className="group/task h-full transition-shadow hover:ring-foreground/20">
             <CardContent className="flex h-full flex-col gap-2.5">
                 <div className="flex items-center justify-between gap-2">
                     <TaskStatusBadge complete={task.complete} />
                     <div className="flex gap-0.5">
-                        <Button variant="ghost" size="icon-sm" className="cursor-pointer" aria-label={`Modifier la tâche ${task.name}`} onClick={() => onEdit(task)}>
+                        <Button ref={editButtonRef} variant="ghost" size="icon-sm" className="cursor-pointer" aria-label={`Modifier la tâche ${task.name}`} onClick={() => onEdit(task)}>
                             <FaPen aria-hidden="true" />
                         </Button>
                         <Button
@@ -48,9 +55,22 @@ export default function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
                 {task.description
                     ? <p className="text-sm wrap-break-word text-muted-foreground">{task.description}</p>
                     : <p className="text-sm text-muted-foreground italic">Aucune description</p>}
-                <p className="text-sm text-muted-foreground">
-                    Bénévole : {task.assignee ?? <span className="italic">non assigné</span>}
-                </p>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm text-muted-foreground">
+                        Bénévole : {task.assignee ?? <span className="italic">non assigné</span>}
+                    </p>
+                    {task.assignee && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="cursor-pointer"
+                            aria-label={`Retirer le bénévole de la tâche ${task.name}`}
+                            onClick={removeAssignee}
+                        >
+                            Retirer le bénévole
+                        </Button>
+                    )}
+                </div>
 
                 {confirming ? (
                     <div role="group" aria-label={`Confirmer la suppression de la tâche ${task.name}`} className="mt-auto flex flex-wrap items-center gap-2 rounded-lg bg-destructive/10 p-2.5 text-sm">

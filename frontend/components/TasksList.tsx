@@ -67,6 +67,21 @@ export default function TasksList() {
         }
     };
 
+    const handleRemoveAssignee = async (task: Task) => {
+        try {
+            const res = await fetch(`http://localhost:3000/tasks/${task.id}/assignee`, { method: "DELETE" });
+            if (!res.ok) throw new Error("Erreur lors du retrait du bénévole");
+
+            const updated: Task = await res.json();
+            setTasks(tasks.map((t) => (t.id === updated.id ? updated : t)));
+            setActionError(null);
+            setStatusMessage(`Bénévole retiré de la tâche « ${task.name} ».`);
+        } catch (err) {
+            setStatusMessage("");
+            setActionError(err instanceof Error ? err.message : "Erreur inconnue");
+        }
+    };
+
     const completed = tasks.filter((t) => t.complete).length;
     const counts = { all: tasks.length, complete: completed, incomplete: tasks.length - completed };
 
@@ -108,7 +123,7 @@ export default function TasksList() {
                             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                 {displayedTasks.map((task) => (
                                     <li key={task.id}>
-                                        <TaskCard task={task} onEdit={openDrawer} onDelete={handleDelete} />
+                                        <TaskCard task={task} onEdit={openDrawer} onDelete={handleDelete} onRemoveAssignee={handleRemoveAssignee} />
                                     </li>
                                 ))}
                             </ul>

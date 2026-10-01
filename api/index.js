@@ -14,6 +14,8 @@ app.use(cors({
   origin: corsOrigin,
 }));
  
+// Journaux : on n'écrit jamais req.body ni l'objet d'erreur complet (err.detail peut contenir
+// les valeurs envoyées, dont le prénom du bénévole) : seulement err.message
 // Schéma de validation d'une tâche : seul ce contrôle protège les données
 const taskSchema = Joi.object({
   name: Joi.string().trim().max(255).required().messages({
@@ -35,7 +37,7 @@ app.get("/tasks", async (req, res) => {
     const result = await pool.query("SELECT * FROM tasks ORDER BY id");
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
@@ -48,7 +50,7 @@ app.get("/tasks/:id", async (req, res) => {
     if (result.rows.length === 0) return res.status(404).json({ error: "Item introuvable" });
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
@@ -66,7 +68,7 @@ app.post("/tasks", async (req, res) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
@@ -85,11 +87,23 @@ app.put("/tasks/:id", async (req, res) => {
     if (result.rows.length === 0) return res.status(404).json({ error: "Item introuvable" });
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
  
+// DELETE /tasks/:id/assignee : droit à l'effacement, retire le prénom sans supprimer la tâche
+app.delete("/tasks/:id/assignee", async (req, res) => {
+  try {
+    const result = await pool.query("UPDATE tasks SET assignee = NULL WHERE id = $1 RETURNING *", [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: "Item introuvable" });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 // DELETE /tasks/:id : suppression
 // Avant : tasks.splice(index, 1)
 app.delete("/tasks/:id", async (req, res) => {
@@ -98,7 +112,7 @@ app.delete("/tasks/:id", async (req, res) => {
     if (result.rows.length === 0) return res.status(404).json({ error: "Item introuvable" });
     res.status(204).send();
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });

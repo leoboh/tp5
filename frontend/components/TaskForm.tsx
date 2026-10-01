@@ -99,6 +99,7 @@ export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: Task
                     onChange={(e) => setAssignee(e.target.value)}
                     maxLength={ASSIGNEE_MAX_LENGTH}
                     autoComplete="off"
+                    aria-describedby="assignee-notice"
                 />
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -111,6 +112,11 @@ export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: Task
                     {submitting ? "Enregistrement..." : task ? "Enregistrer" : "Ajouter"}
                 </Button>
             </div>
+            {/* Information des personnes (RGPD) : finalité, durée de conservation, contact */}
+            <p id="assignee-notice" className="text-xs text-muted-foreground">
+                L'association collecte ce prénom uniquement pour savoir quel bénévole s'occupe de la tâche. Il est supprimé en même temps que la tâche. Pour le faire retirer plus tôt :{" "}
+                <a href="mailto:contact@association.example" className="underline underline-offset-2 hover:text-foreground">contact@association.example</a>
+            </p>
         </form>
     )
 }
