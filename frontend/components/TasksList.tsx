@@ -83,41 +83,47 @@ export default function TasksList() {
     }[filter];
 
     return (
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-10">
-            <TasksHeader total={tasks.length} completed={completed} onAdd={() => openDrawer(null)} headingRef={headingRef} />
-
-            <main className="flex flex-col gap-6">
-                <h2 className="sr-only">Liste des tâches</h2>
-
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <TaskFilterButtons filter={filter} onFilterChange={setFilter} counts={counts} />
-                    <p role="status" className="text-sm text-foreground">
-                        {loading ? "Chargement des tâches..." : statusMessage}
-                    </p>
+        <div className="min-h-screen bg-muted px-4 py-10">
+            <div className="mx-auto flex w-full max-w-5xl flex-col divide-y rounded-xl border bg-card shadow-sm">
+                <div className="p-6">
+                    <TasksHeader total={tasks.length} completed={completed} onAdd={() => openDrawer(null)} headingRef={headingRef} />
                 </div>
 
-                {actionError && <p role="alert" className="text-sm text-destructive">Erreur : {actionError}</p>}
+                <main className="flex flex-col">
+                    <h2 className="sr-only">Liste des tâches</h2>
 
-                {loading ? null : error ? (
-                    <p role="alert" className="text-sm text-destructive">Erreur : {error}</p>
-                ) : displayedTasks.length > 0 ? (
-                    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {displayedTasks.map((task) => (
-                            <li key={task.id}>
-                                <TaskCard task={task} onEdit={openDrawer} onDelete={handleDelete} />
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <div className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
-                        <strong className="text-base font-semibold text-foreground">Aucune tâche ici</strong>
-                        <span>{emptyMessage}</span>
-                        <Button variant="outline" className="cursor-pointer" onClick={() => openDrawer(null)}>Ajouter une tâche</Button>
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-4">
+                        <TaskFilterButtons filter={filter} onFilterChange={setFilter} counts={counts} />
+                        <p role="status" className="text-sm text-foreground">
+                            {loading ? "Chargement des tâches..." : statusMessage}
+                        </p>
                     </div>
-                )}
 
-                <TaskFormDrawer open={drawerOpen} onOpenChange={setDrawerOpen} task={editingTask} onSaved={handleSaved} />
-            </main>
+                    <div className="flex flex-col gap-4 p-6">
+                        {actionError && <p role="alert" className="text-sm text-destructive">Erreur : {actionError}</p>}
+
+                        {loading ? null : error ? (
+                            <p role="alert" className="text-sm text-destructive">Erreur : {error}</p>
+                        ) : displayedTasks.length > 0 ? (
+                            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                {displayedTasks.map((task) => (
+                                    <li key={task.id}>
+                                        <TaskCard task={task} onEdit={openDrawer} onDelete={handleDelete} />
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <div className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
+                                <strong className="text-base font-semibold text-foreground">Aucune tâche ici</strong>
+                                <span>{emptyMessage}</span>
+                                <Button variant="outline" className="cursor-pointer" onClick={() => openDrawer(null)}>Ajouter une tâche</Button>
+                            </div>
+                        )}
+                    </div>
+
+                    <TaskFormDrawer open={drawerOpen} onOpenChange={setDrawerOpen} task={editingTask} onSaved={handleSaved} />
+                </main>
+            </div>
         </div>
     )
 }
