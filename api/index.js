@@ -5,8 +5,12 @@ const pool = require("./db");
 const app = express();
 app.use(express.json());
 // Seul le frontend a le droit d'appeler l'API depuis un navigateur
+const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
+if (corsOrigin.includes('*')) {
+  throw new Error("CORS_ORIGIN ne doit pas être '*'");
+}
 app.use(cors({
-origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: corsOrigin,
 }));
  
 // GET /tasks : liste de tous les tasks
