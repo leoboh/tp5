@@ -91,7 +91,6 @@ export default function TasksList() {
 
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <TaskFilterButtons filter={filter} onFilterChange={setFilter} counts={counts} />
-                    {/* Zone toujours présente dans le DOM pour que les lecteurs d'écran annoncent ses changements */}
                     <p role="status" className="text-sm text-foreground">
                         {loading ? "Chargement des tâches..." : statusMessage}
                     </p>

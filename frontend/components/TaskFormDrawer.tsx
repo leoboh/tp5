@@ -16,7 +16,6 @@ export default function TaskFormDrawer({ open, onOpenChange, task, onSaved }: Ta
                         {task ? `Tâche #${task.id}` : "Renseigne le nom et la description de la tâche."}
                     </DrawerDescription>
                 </DrawerHeader>
-                {/* key : réinitialise le formulaire quand on change de tâche */}
                 <TaskForm
                     key={task?.id ?? "new"}
                     task={task}
