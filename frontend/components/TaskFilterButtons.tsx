@@ -1,6 +1,7 @@
 import { cn } from "cn";
 import { TaskFilter, TaskFilterButtonsProps } from "../types/taskFilterButtonsProps";
 
+// Liste des filtres disponibles avec leur libellé affiché
 const FILTERS: { value: TaskFilter; label: string }[] = [
     { value: "all", label: "Toutes" },
     { value: "complete", label: "Complètes" },

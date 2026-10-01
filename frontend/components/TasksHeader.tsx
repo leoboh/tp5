@@ -2,6 +2,7 @@ import { TasksHeaderProps } from "../types/tasksHeaderProps";
 import { Button } from "./shadcn/button";
 
 export default function TasksHeader({ total, completed, onAdd, headingRef }: TasksHeaderProps) {
+    // Pourcentage de tâches complètes, affiché dans la barre de progression
     const percent = total ? Math.round((completed / total) * 100) : 0;
 
     return (

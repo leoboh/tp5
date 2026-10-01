@@ -8,12 +8,16 @@ import TaskFormDrawer from "./TaskFormDrawer.tsx";
 import { Button } from "./shadcn/button";
 
 export default function TasksList() {
+    // Liste des tâches récupérées depuis l'API
     const [tasks, setTasks] = useState<Task[]>([]);
+    // Chargement initial en cours (true jusqu'à la fin du premier fetch)
     const [loading, setLoading] = useState(true);
+    // Erreur lors du chargement initial de la liste
     const [error, setError] = useState<string | null>(null);
 
-    // Messages annoncés aux lecteurs d'écran : succès (role="status") et erreurs d'action (role="alert")
+    // Message de succès annoncé aux lecteurs d'écran (role="status")
     const [statusMessage, setStatusMessage] = useState("");
+    // Erreur d'une action (suppression, etc.) annoncée aux lecteurs d'écran (role="alert")
     const [actionError, setActionError] = useState<string | null>(null);
 
     // Cible du focus quand la carte focalisée est supprimée
@@ -22,8 +26,9 @@ export default function TasksList() {
     // Filtre d'affichage des tâches
     const [filter, setFilter] = useState<TaskFilter>("all");
 
-    // Drawer d'ajout / modification (editingTask null = ajout)
+    // Ouverture du drawer d'ajout / modification
     const [drawerOpen, setDrawerOpen] = useState(false);
+    // Tâche en cours de modification dans le drawer (null = ajout d'une nouvelle tâche)
     const [editingTask, setEditingTask] = useState<Task | null>(null);
 
     useEffect(() => {
@@ -37,11 +42,13 @@ export default function TasksList() {
         .finally(() => setLoading(false));
     }, []); // [] = exécuté une seule fois au montage
 
+    // Ouvre le drawer en mode modification (task fournie) ou ajout (null)
     const openDrawer = (task: Task | null) => {
         setEditingTask(task);
         setDrawerOpen(true);
     };
 
+    // Met à jour la liste après l'enregistrement du formulaire (ajout ou modification)
     const handleSaved = (saved: Task) => {
         setTasks(editingTask
             ? tasks.map((t) => (t.id === saved.id ? saved : t))
@@ -51,8 +58,10 @@ export default function TasksList() {
         setDrawerOpen(false);
     };
 
+    // Supprime la tâche côté API puis la retire de la liste
     const handleDelete = async (task: Task) => {
         try {
+            // Requête de suppression de la tâche
             const res = await fetch(`http://localhost:3000/tasks/${task.id}`, { method: "DELETE" });
             if (!res.ok) throw new Error("Erreur lors de la suppression");
 
@@ -67,11 +76,14 @@ export default function TasksList() {
         }
     };
 
+    // Retire le bénévole assigné côté API puis met à jour la tâche dans la liste
     const handleRemoveAssignee = async (task: Task) => {
         try {
+            // Requête de retrait du bénévole
             const res = await fetch(`http://localhost:3000/tasks/${task.id}/assignee`, { method: "DELETE" });
             if (!res.ok) throw new Error("Erreur lors du retrait du bénévole");
 
+            // Tâche mise à jour renvoyée par l'API
             const updated: Task = await res.json();
             setTasks(tasks.map((t) => (t.id === updated.id ? updated : t)));
             setActionError(null);
@@ -82,15 +94,19 @@ export default function TasksList() {
         }
     };
 
+    // Nombre de tâches complètes
     const completed = tasks.filter((t) => t.complete).length;
+    // Compteurs affichés sur chaque bouton de filtre
     const counts = { all: tasks.length, complete: completed, incomplete: tasks.length - completed };
 
+    // Tâches affichées selon le filtre sélectionné
     const displayedTasks = tasks.filter((t) => {
         if (filter === "complete") return t.complete;
         if (filter === "incomplete") return !t.complete;
         return true;
     });
 
+    // Message affiché quand aucune tâche ne correspond au filtre
     const emptyMessage = {
         all: "Commence par créer ta première tâche.",
         complete: "Aucune tâche n'est encore complète.",

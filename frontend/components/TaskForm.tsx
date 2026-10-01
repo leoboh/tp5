@@ -5,15 +5,21 @@ import TaskStatusBadge from "./TaskStatusBadge.tsx";
 import { Input } from "./shadcn/input";
 import { Button } from "./shadcn/button";
 
-// Même limite que le schéma Joi de l'API
+// Longueur max du nom, même limite que le schéma Joi de l'API
 const NAME_MAX_LENGTH = 255;
+// Longueur max du bénévole, même limite que le schéma Joi de l'API
 const ASSIGNEE_MAX_LENGTH = 50;
 
 export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: TaskFormProps) {
+    // Nom de la tâche, pré-rempli avec la tâche existante en mode édition
     const [name, setName] = useState(task?.name ?? "");
+    // Description de la tâche (facultative)
     const [description, setDescription] = useState(task?.description ?? "");
+    // Bénévole assigné à la tâche (facultatif)
     const [assignee, setAssignee] = useState(task?.assignee ?? "");
+    // Requête en cours : sert à désactiver le bouton et éviter les doubles envois
     const [submitting, setSubmitting] = useState(false);
+    // Erreur globale renvoyée par l'API ou le réseau, affichée au-dessus des boutons
     const [error, setError] = useState<string | null>(null);
     // Erreur de saisie du champ "Nom", affichée sous le champ et reliée par aria-describedby
     const [nameError, setNameError] = useState<string | null>(null);
@@ -21,6 +27,7 @@ export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: Task
     // Même règle que la colonne générée "complete" en base
     const willBeComplete = name.trim() !== "" && description.trim() !== "";
 
+    // Valide le formulaire puis crée (POST) ou modifie (PUT) la tâche via l'API
     const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault(); // évite le rechargement de la page
 
@@ -38,6 +45,7 @@ export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: Task
         setError(null);
 
         try {
+            // Requête d'ajout ou de modification selon le mode du formulaire
             const res = await fetch(task ? `http://localhost:3000/tasks/${task.id}` : "http://localhost:3000/tasks", {
                 method: task ? "PUT" : "POST",
                 headers: { "Content-Type": "application/json" },
@@ -49,6 +57,7 @@ export default function TaskForm({ task, onSaved, onCancel, nameInputRef }: Task
                 throw new Error(body?.error ?? (task ? "Erreur lors de la modification" : "Erreur lors de l'ajout de la tâche"));
             }
 
+            // Tâche enregistrée renvoyée par l'API
             const savedTask: Task = await res.json();
             onSaved(savedTask);
         } catch (err) {

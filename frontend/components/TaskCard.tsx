@@ -8,8 +8,11 @@ import { Button } from "./shadcn/button";
 export default function TaskCard({ task, onEdit, onDelete, onRemoveAssignee }: TaskCardProps) {
     // Affiche la confirmation de suppression dans la carte (remplace confirm())
     const [confirming, setConfirming] = useState(false);
+    // Bouton corbeille : reçoit le focus quand on annule la suppression
     const deleteButtonRef = useRef<HTMLButtonElement>(null);
+    // Bouton "Annuler" de la confirmation : reçoit le focus à l'ouverture de la confirmation
     const cancelButtonRef = useRef<HTMLButtonElement>(null);
+    // Bouton crayon : reçoit le focus après le retrait du bénévole
     const editButtonRef = useRef<HTMLButtonElement>(null);
 
     // Le focus arrive sur l'action non destructive dès l'apparition de la confirmation
@@ -17,12 +20,14 @@ export default function TaskCard({ task, onEdit, onDelete, onRemoveAssignee }: T
         if (confirming) cancelButtonRef.current?.focus();
     }, [confirming]);
 
+    // Ferme la confirmation de suppression sans supprimer la tâche
     const cancelDelete = () => {
         // On rend le focus au bouton corbeille avant que la zone de confirmation disparaisse
         deleteButtonRef.current?.focus();
         setConfirming(false);
     };
 
+    // Retire le bénévole assigné à la tâche via le parent
     const removeAssignee = async () => {
         await onRemoveAssignee(task);
         // Le bouton "Retirer le bénévole" disparaît : on garde le focus dans la carte
